@@ -1,0 +1,20 @@
+# Dependencies & Builds
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Environment & Keys
+.env*
+!.env.example
+
+# Logs & Testing
+*.log
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# OS artifacts
+.DS_Store
+Thumbs.db
