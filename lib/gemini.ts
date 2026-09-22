@@ -4,7 +4,7 @@ import type { AnalysisResult, ComparisonResult, ChatMessage } from './types';
 const apiKey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apiKey);
 
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-3.6-flash';
 
 const SYSTEM_LEGAL_GUARDRAILS = `
 You are JurisBridge AI, an expert legal document analyst.
@@ -15,6 +15,49 @@ Follow these strict guardrails:
 4. For document analysis, ALWAYS generate between 5 and 7 concrete, actionable questions that the user can ask an attorney.
 5. If a user persona (e.g. Freelancer, Small Business Owner, Tenant, Employee) is specified, tailor the risk scoring, explanations, and revisions to protect that persona's best interests.
 `;
+
+/**
+ * Retry helper for transient 503 Service Unavailable or 429 Rate Limit API errors.
+ * Retries up to 2 times with a 1.5 second delay between attempts.
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  retries = 2,
+  delayMs = 1500
+): Promise<T> {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      attempt++;
+      const errorMessage = error?.message || String(error);
+      const isTransient =
+        errorMessage.includes('503') ||
+        errorMessage.includes('429') ||
+        errorMessage.includes('UNAVAILABLE') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED') ||
+        error?.status === 503 ||
+        error?.status === 429;
+
+      if (isTransient && attempt <= retries) {
+        console.warn(
+          `[Gemini API] Retry attempt ${attempt}/${retries} after transient error: ${errorMessage}`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        continue;
+      }
+
+      if (isTransient && attempt > retries) {
+        throw new Error(
+          `Gemini service temporarily unavailable after ${retries} retries (${errorMessage}). Please try again shortly.`
+        );
+      }
+
+      throw error;
+    }
+  }
+}
 
 const analysisSchema = {
   type: SchemaType.OBJECT,
@@ -117,7 +160,7 @@ const chatSchema = {
 };
 
 /**
- * Analyzes a sanitized legal document using Gemini 2.5 Flash with structured JSON output.
+ * Analyzes a sanitized legal document using Gemini 3.6 Flash with structured JSON output.
  */
 export async function analyzeDocument(
   sanitizedText: string,
@@ -146,7 +189,7 @@ ${sanitizedText}
 Provide a structured JSON report identifying key clauses, simplified explanations (8th grade reading level), risk levels (HIGH, MEDIUM, SAFE), action items, and 5 to 7 attorney questions.
 `;
 
-  const result = await model.generateContent(prompt);
+  const result = await retryWithBackoff(() => model.generateContent(prompt));
   const responseText = result.response.text();
   const parsed = JSON.parse(responseText);
 
@@ -154,7 +197,7 @@ Provide a structured JSON report identifying key clauses, simplified explanation
 }
 
 /**
- * Compares two versions of a sanitized legal document using Gemini 2.5 Flash.
+ * Compares two versions of a sanitized legal document using Gemini 3.6 Flash.
  */
 export async function compareDocuments(
   docA: string,
@@ -182,7 +225,7 @@ ${docB}
 Identify key added/modified/deleted provisions and evaluate if each shift is FAVORABLE, UNFAVORABLE, or NEUTRAL for the reviewing party.
 `;
 
-  const result = await model.generateContent(prompt);
+  const result = await retryWithBackoff(() => model.generateContent(prompt));
   const responseText = result.response.text();
   const parsed = JSON.parse(responseText);
 
@@ -225,7 +268,7 @@ User Question: ${question}
 Provide a direct, grounded response with optional clause citations (citedClauseIds).
 `;
 
-  const result = await model.generateContent(prompt);
+  const result = await retryWithBackoff(() => model.generateContent(prompt));
   const responseText = result.response.text();
   const parsed = JSON.parse(responseText);
 
