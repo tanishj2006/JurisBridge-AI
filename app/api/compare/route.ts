@@ -65,7 +65,10 @@ export async function POST(req: NextRequest) {
       sanitizedDocB
     );
 
-    return NextResponse.json(comparisonResult, { status: 200 });
+    return NextResponse.json(
+      { ...comparisonResult, dataSource: comparisonResult.dataSource || 'live' },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error('API /api/compare error:', error);
 

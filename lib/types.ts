@@ -1,3 +1,6 @@
+/** Tracks whether a result was produced by live AI inference or an offline resilience fallback. */
+export type DataSource = 'live' | 'cached-resilience';
+
 export interface ClauseAnalysis {
   id: string;
   category: string;
@@ -16,6 +19,7 @@ export interface AnalysisResult {
   attorneyQuestions: string[];
   redactedPiiCount: number; // Demonstrates active privacy scrubbing
   disclaimer: string;      // Reinforces informational-only scope
+  dataSource?: DataSource;  // UI metadata badge
 }
 
 export interface DiffItem {
@@ -30,6 +34,7 @@ export interface ComparisonResult {
   documentType: string;
   keyDifferences: DiffItem[];
   riskSummary: string;
+  dataSource?: DataSource;  // UI metadata badge
 }
 
 export interface ChatMessage {

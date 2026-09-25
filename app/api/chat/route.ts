@@ -66,7 +66,10 @@ export async function POST(req: NextRequest) {
       sanitizedQuestion
     );
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(
+      { ...result, dataSource: result.dataSource || 'live' },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error('API /api/chat error:', error);
 

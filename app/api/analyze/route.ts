@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
       ...analysis,
       redactedPiiCount: redactionCount,
       disclaimer: MANDATORY_DISCLAIMER,
+      dataSource: analysis.dataSource || 'live',
     };
 
     return NextResponse.json(fullResult, { status: 200 });
