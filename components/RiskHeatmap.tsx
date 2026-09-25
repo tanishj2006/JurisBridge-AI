@@ -15,17 +15,16 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
   const mediumCount = clauses.filter((c) => c.riskLevel === 'MEDIUM').length;
   const safeCount = clauses.filter((c) => c.riskLevel === 'SAFE').length;
 
-  // Dynamic risk color styling
-  let scoreColorClass = 'text-emerald-400 border-emerald-500/30 bg-emerald-950/40';
+  let scoreColorClass = 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
   let barColorClass = 'bg-emerald-500';
   let riskLabel = 'Low Risk';
 
   if (overallRiskScore >= 70) {
-    scoreColorClass = 'text-rose-400 border-rose-500/40 bg-rose-950/40';
+    scoreColorClass = 'text-rose-400 border-rose-500/30 bg-rose-500/10';
     barColorClass = 'bg-rose-500';
     riskLabel = 'Critical Risk';
   } else if (overallRiskScore >= 30) {
-    scoreColorClass = 'text-amber-400 border-amber-500/40 bg-amber-950/40';
+    scoreColorClass = 'text-amber-400 border-amber-500/30 bg-amber-500/10';
     barColorClass = 'bg-amber-500';
     riskLabel = 'Moderate Risk';
   }
@@ -33,7 +32,7 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
   return (
     <section
       aria-labelledby="risk-heatmap-heading"
-      className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6"
+      className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-lg space-y-6 w-full overflow-hidden"
     >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
@@ -45,14 +44,14 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
             <span>Document Risk Heatmap</span>
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            Automated legal threat analysis & risk breakdown
+            Automated legal threat analysis &amp; risk breakdown
           </p>
         </div>
 
         {/* Clause Chips */}
         <div className="flex items-center gap-2 flex-wrap" role="region" aria-label="Risk Clause Counts">
           <span
-            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-950/60 text-rose-300 border border-rose-800/60 flex items-center gap-1.5 shadow-sm"
+            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/30 flex items-center gap-1.5 shadow-sm"
             aria-label={`${highCount} high risk clauses detected`}
           >
             <AlertCircle className="h-3.5 w-3.5 text-rose-400" aria-hidden="true" />
@@ -60,7 +59,7 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
           </span>
 
           <span
-            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-950/60 text-amber-300 border border-amber-800/60 flex items-center gap-1.5 shadow-sm"
+            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 shadow-sm"
             aria-label={`${mediumCount} medium risk clauses detected`}
           >
             <AlertTriangle className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
@@ -68,7 +67,7 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
           </span>
 
           <span
-            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 flex items-center gap-1.5 shadow-sm"
+            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm"
             aria-label={`${safeCount} safe clauses detected`}
           >
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
@@ -88,7 +87,7 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
             {overallRiskScore}
             <span className="text-lg font-medium text-slate-400">/100</span>
           </div>
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-900/60 border border-current mt-1">
+          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-900/80 border border-current mt-1">
             {riskLabel}
           </span>
         </div>
@@ -115,18 +114,18 @@ export default function RiskHeatmap({ analysis }: RiskHeatmapProps) {
             </div>
           </div>
 
-          <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800">
+          <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800 break-words">
             <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
               Executive Assessment
             </h3>
-            <p className="text-sm text-slate-300 leading-relaxed">{summary}</p>
+            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{summary}</p>
           </div>
         </div>
       </div>
 
       {/* Key Action Items */}
       {actionItems && actionItems.length > 0 && (
-        <div className="bg-slate-950/40 rounded-xl p-4 border border-slate-800/80">
+        <div className="bg-slate-950/40 rounded-xl p-4 border border-slate-800/80 break-words">
           <h3 className="text-sm font-semibold text-amber-300 mb-2 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-400" aria-hidden="true" />
             <span>Key Risk Items to Address</span>

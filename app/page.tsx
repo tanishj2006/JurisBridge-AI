@@ -122,12 +122,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-x-hidden w-full max-w-full">
       {/* 1. Top Legal Disclaimer Banner */}
       <DisclaimerBanner />
 
-      {/* Main Container */}
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 space-y-8">
+      {/* Main Container - Constrained Layout */}
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 space-y-8 overflow-hidden">
         {/* Header Hero Section */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
           <div className="space-y-2">
@@ -140,7 +140,7 @@ export default function Home() {
                 v1.0 Production
               </span>
             </div>
-            <p className="text-sm sm:text-base text-slate-400 max-w-2xl">
+            <p className="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed">
               AI-powered legal clause demystification, high-risk detection, PII privacy guardrails, and side-by-side contract comparison.
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function Home() {
           {/* Quick Selectors Toolbar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
             {/* Persona Selector */}
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs">
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs shadow-sm">
               <UserCheck className="h-4 w-4 text-indigo-400 shrink-0" aria-hidden="true" />
               <label htmlFor="persona-select" className="text-slate-400 shrink-0 font-medium">
                 Persona:
@@ -168,7 +168,7 @@ export default function Home() {
             </div>
 
             {/* Samples Quick Loader */}
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs">
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs shadow-sm">
               <FileText className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
               <label htmlFor="sample-select" className="text-slate-400 shrink-0 font-medium">
                 Load Sample:
@@ -179,7 +179,7 @@ export default function Home() {
                 onChange={(e) => {
                   if (e.target.value) handleSelectSample(e.target.value);
                 }}
-                className="bg-slate-950 text-slate-200 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded px-1.5 py-0.5"
+                className="bg-slate-950 text-slate-200 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded px-1.5 py-0.5 max-w-[200px] truncate"
               >
                 <option value="" disabled>
                   -- Select Pre-loaded Contract --
@@ -210,7 +210,7 @@ export default function Home() {
               }`}
             >
               <Sparkles className="h-4 w-4" aria-hidden="true" />
-              <span>Demystify & Analyze</span>
+              <span>Demystify &amp; Analyze</span>
             </button>
 
             <button
@@ -237,10 +237,10 @@ export default function Home() {
             id="panel-analyze"
             role="tabpanel"
             aria-labelledby="tab-analyze"
-            className="space-y-8"
+            className="space-y-8 w-full overflow-hidden"
           >
             {/* Input Form Box */}
-            <section className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+            <section className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-lg space-y-4">
               <div className="flex items-center justify-between">
                 <label htmlFor="contract-text-input" className="text-base font-bold text-white flex items-center gap-2">
                   <Upload className="h-5 w-5 text-indigo-400" aria-hidden="true" />
@@ -259,11 +259,11 @@ export default function Home() {
                 value={documentText}
                 onChange={(e) => setDocumentText(e.target.value)}
                 placeholder="Paste contract text here (e.g. lease agreement, NDA, employment contract)..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 break-words"
               />
 
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                <p className="text-xs text-slate-400 flex items-center gap-1.5 leading-normal">
                   <Info className="h-4 w-4 text-indigo-400 shrink-0" aria-hidden="true" />
                   <span>All emails, phone numbers, SSNs, and credit cards are scrubbed locally before analysis.</span>
                 </p>
@@ -271,12 +271,12 @@ export default function Home() {
                 <button
                   onClick={handleAnalyze}
                   disabled={isAnalyzing || !documentText.trim()}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-900/40 flex items-center justify-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-900/40 flex items-center justify-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 shrink-0"
                 >
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      <span>Analyzing Legal Risk & Scrubbing PII...</span>
+                      <span>Analyzing Legal Risk &amp; Scrubbing PII...</span>
                     </>
                   ) : (
                     <>
@@ -298,10 +298,10 @@ export default function Home() {
             {/* Skeleton Loader during Analysis */}
             {isAnalyzing && (
               <div className="space-y-6 animate-pulse">
-                <div className="h-44 bg-slate-900 rounded-2xl border border-slate-800" />
+                <div className="h-44 bg-slate-900/80 rounded-xl border border-slate-800" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="h-64 bg-slate-900 rounded-2xl border border-slate-800" />
-                  <div className="h-64 bg-slate-900 rounded-2xl border border-slate-800" />
+                  <div className="h-64 bg-slate-900/80 rounded-xl border border-slate-800" />
+                  <div className="h-64 bg-slate-900/80 rounded-xl border border-slate-800" />
                 </div>
               </div>
             )}
@@ -310,7 +310,7 @@ export default function Home() {
             {analysisResult && !isAnalyzing && (
               <div className="space-y-8">
                 {/* PII Scrubbing Status Banner */}
-                <div className="bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 p-4 rounded-2xl flex items-center justify-between text-xs sm:text-sm">
+                <div className="bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 p-4 rounded-xl flex items-center justify-between text-xs sm:text-sm shadow-sm">
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="h-5 w-5 text-emerald-400 shrink-0" aria-hidden="true" />
                     <span>
@@ -326,7 +326,7 @@ export default function Home() {
                 <RiskHeatmap analysis={analysisResult} />
 
                 {/* Main 2-Column Dashboard: Clause Cards + Document Chat */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                   {/* Clause Cards Column (2 Cols) */}
                   <div className="lg:col-span-2 space-y-6">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -369,10 +369,10 @@ export default function Home() {
             id="panel-compare"
             role="tabpanel"
             aria-labelledby="tab-compare"
-            className="space-y-8"
+            className="space-y-8 w-full overflow-hidden"
           >
             {/* Input Dual Box */}
-            <section className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+            <section className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-lg space-y-6">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <GitCompare className="h-5 w-5 text-indigo-400" aria-hidden="true" />
                 <span>Compare Two Contract Drafts</span>
@@ -390,7 +390,7 @@ export default function Home() {
                     value={docA}
                     onChange={(e) => setDocA(e.target.value)}
                     placeholder="Paste Draft A text here..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 break-words"
                   />
                 </div>
 
@@ -405,7 +405,7 @@ export default function Home() {
                     value={docB}
                     onChange={(e) => setDocB(e.target.value)}
                     placeholder="Paste Draft B text here..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 break-words"
                   />
                 </div>
               </div>
@@ -414,7 +414,7 @@ export default function Home() {
                 <button
                   onClick={handleCompare}
                   disabled={isComparing || !docA.trim() || !docB.trim()}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-900/40 flex items-center justify-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-900/40 flex items-center justify-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 shrink-0"
                 >
                   {isComparing ? (
                     <>
@@ -440,7 +440,7 @@ export default function Home() {
 
             {/* Skeleton Loader during Comparison */}
             {isComparing && (
-              <div className="h-80 bg-slate-900 rounded-2xl border border-slate-800 animate-pulse" />
+              <div className="h-80 bg-slate-900/80 rounded-xl border border-slate-800 animate-pulse" />
             )}
 
             {/* Comparison Results */}
@@ -453,7 +453,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 space-y-1">
+        <div className="max-w-6xl mx-auto px-4 space-y-1">
           <p>© 2026 JurisBridge AI — Empowering accessible legal analysis for everyone.</p>
           <p className="text-slate-600">Built with Next.js 14, TypeScript, Tailwind CSS, &amp; Google Gemini 3.6 Flash.</p>
         </div>

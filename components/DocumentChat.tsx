@@ -23,10 +23,13 @@ export default function DocumentChat({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current && messagesEndRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -85,7 +88,7 @@ export default function DocumentChat({
   return (
     <aside
       aria-label="Document Interactive Q&A Assistant"
-      className="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col h-[520px]"
+      className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col w-full overflow-hidden"
     >
       {/* Drawer Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
@@ -98,8 +101,11 @@ export default function DocumentChat({
         </span>
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto space-y-4 pr-1 text-xs sm:text-sm">
+      {/* Constrained Messages Scroll Area */}
+      <div
+        ref={chatContainerRef}
+        className="h-[380px] max-h-[400px] overflow-y-auto overflow-x-hidden p-2 space-y-3 custom-scrollbar"
+      >
         {messages.map((msg, idx) => (
           <div
             key={idx}
@@ -114,13 +120,13 @@ export default function DocumentChat({
             )}
 
             <div
-              className={`max-w-[85%] rounded-2xl p-3.5 leading-relaxed ${
+              className={`max-w-[85%] break-words rounded-2xl p-3.5 leading-relaxed text-xs sm:text-sm ${
                 msg.role === 'user'
                   ? 'bg-indigo-600 text-white rounded-tr-none'
                   : 'bg-slate-950/80 border border-slate-800 text-slate-200 rounded-tl-none space-y-2'
               }`}
             >
-              <p>{msg.content}</p>
+              <p className="whitespace-pre-wrap break-words">{msg.content}</p>
 
               {/* Cited Clause Badges */}
               {msg.citedClauseIds && msg.citedClauseIds.length > 0 && (
@@ -154,7 +160,7 @@ export default function DocumentChat({
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-slate-400 p-2">
             <Loader2 className="h-4 w-4 animate-spin text-indigo-400" aria-hidden="true" />
-            <span>Searching document and formulating answer...</span>
+            <span>Formulating answer...</span>
           </div>
         )}
 
@@ -169,13 +175,13 @@ export default function DocumentChat({
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a question about this contract..."
           disabled={isLoading}
-          className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           aria-label="Ask a question about the document"
         />
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white transition focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white transition focus:outline-none focus:ring-2 focus:ring-indigo-400 shrink-0"
           aria-label="Send question"
         >
           <Send className="h-4 w-4" aria-hidden="true" />

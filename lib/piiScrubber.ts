@@ -9,9 +9,11 @@ export interface PiiScrubResult {
   };
 }
 
+export const MAX_DOCUMENT_LENGTH = 60000; // ~30 pages hard cap for DoS prevention
+
 /**
- * Scrubs personally identifiable information (PII) from text using high-precision regex matching.
- * Replaces emails, phone numbers, SSN/IDs, and financial account numbers with confidential tags.
+ * Scrubs personally identifiable information (PII) using linear single-pass regex matching.
+ * Replaces emails, phone numbers, SSN/IDs, and financial accounts with confidential tags.
  */
 export function scrubPII(text: string): PiiScrubResult {
   if (!text) {
@@ -22,55 +24,51 @@ export function scrubPII(text: string): PiiScrubResult {
     };
   }
 
+  // Early exit for DoS prevention if input exceeds maximum payload limit
+  if (text.length > MAX_DOCUMENT_LENGTH) {
+    text = text.slice(0, MAX_DOCUMENT_LENGTH);
+  }
+
   let sanitizedText = text;
   let emailsCount = 0;
   let phonesCount = 0;
   let idsCount = 0;
   let financialCount = 0;
 
-  // 1. Email addresses
+  // 1. Email addresses (Linear single-pass)
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-  const emailMatches = sanitizedText.match(emailRegex);
-  if (emailMatches) {
-    emailsCount = emailMatches.length;
-    sanitizedText = sanitizedText.replace(emailRegex, '[CONFIDENTIAL_EMAIL]');
-  }
+  sanitizedText = sanitizedText.replace(emailRegex, () => {
+    emailsCount++;
+    return '[CONFIDENTIAL_EMAIL]';
+  });
 
   // 2. SSN / National ID numbers (e.g. XXX-XX-XXXX)
   const ssnRegex = /\b\d{3}-\d{2}-\d{4}\b/g;
-  const ssnMatches = sanitizedText.match(ssnRegex);
-  if (ssnMatches) {
-    idsCount = ssnMatches.length;
-    sanitizedText = sanitizedText.replace(ssnRegex, '[CONFIDENTIAL_ID]');
-  }
+  sanitizedText = sanitizedText.replace(ssnRegex, () => {
+    idsCount++;
+    return '[CONFIDENTIAL_ID]';
+  });
 
-  // 3. Financial account & credit card sequences (13 to 16 digits with optional spaces or dashes)
-  const financialRegex = /\b\d(?:[ -]?\d){12,15}\b/g;
-  const financialMatches = sanitizedText.match(financialRegex);
-  if (financialMatches) {
-    // Filter to ensure actual digit count is between 13 and 16 to avoid matching long arbitrary strings
-    const validFinancialMatches = financialMatches.filter((m) => {
-      const digitsOnly = m.replace(/\D/g, '');
-      return digitsOnly.length >= 13 && digitsOnly.length <= 16;
-    });
-
-    for (const match of validFinancialMatches) {
-      sanitizedText = sanitizedText.replace(match, '[CONFIDENTIAL_FINANCIAL_ACCOUNT]');
+  // 3. Financial account & credit card sequences (13 to 16 digits, strict word boundaries)
+  const financialRegex = /\b\d{13,16}\b|\b(?:\d{4}[ -]){3}\d{1,4}\b/g;
+  sanitizedText = sanitizedText.replace(financialRegex, (match) => {
+    const digitsOnly = match.replace(/\D/g, '');
+    if (digitsOnly.length >= 13 && digitsOnly.length <= 16) {
       financialCount++;
+      return '[CONFIDENTIAL_FINANCIAL_ACCOUNT]';
     }
-  }
+    return match;
+  });
 
-  // 4. Phone numbers (domestic and international formats)
-  const phoneRegex = /(?:\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
-  const phoneMatches = sanitizedText.match(phoneRegex);
-  if (phoneMatches) {
-    // Exclude matches that were already replaced by tags
-    const validPhoneMatches = phoneMatches.filter((m) => !m.includes('[CONFIDENTIAL_'));
-    for (const match of validPhoneMatches) {
-      sanitizedText = sanitizedText.replace(match, '[CONFIDENTIAL_PHONE]');
-      phonesCount++;
+  // 4. Phone numbers (domestic & international formats, strict word boundaries)
+  const phoneRegex = /\b(?:\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
+  sanitizedText = sanitizedText.replace(phoneRegex, (match) => {
+    if (match.includes('[CONFIDENTIAL_')) {
+      return match;
     }
-  }
+    phonesCount++;
+    return '[CONFIDENTIAL_PHONE]';
+  });
 
   const redactionCount = emailsCount + phonesCount + idsCount + financialCount;
 

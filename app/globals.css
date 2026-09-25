@@ -3,12 +3,84 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0f17;
-  --foreground: #f3f4f6;
+  --background: #020617;
+  --foreground: #f8fafc;
 }
 
+html,
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Custom Sleek Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.7);
+}
+
+/* Dedicated Print Docket Styling Rules */
+@media print {
+  /* Hide everything on the page by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Make ONLY the printable docket and its child elements visible */
+  #printable-docket,
+  #printable-docket * {
+    visibility: visible !important;
+  }
+
+  /* Reposition printable docket to start cleanly at top-left of page */
+  #printable-docket {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Hide buttons and interactive controls inside print container */
+  .no-print,
+  .no-print *,
+  button {
+    display: none !important;
+  }
+
+  /* Ensure text colors are high-contrast black/dark gray for crisp legal print */
+  #printable-docket h1,
+  #printable-docket h2,
+  #printable-docket h3,
+  #printable-docket h4,
+  #printable-docket p,
+  #printable-docket span,
+  #printable-docket li {
+    color: #111827 !important;
+    background: transparent !important;
+    border-color: #e5e7eb !important;
+  }
 }

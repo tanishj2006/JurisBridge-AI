@@ -14,7 +14,7 @@ export default function ComparisonDiff({ comparison }: ComparisonDiffProps) {
   return (
     <section
       aria-labelledby="comparison-diff-heading"
-      className="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6"
+      className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-lg space-y-6 w-full overflow-hidden"
     >
       {/* Header */}
       <div className="border-b border-slate-800 pb-4">
@@ -30,12 +30,12 @@ export default function ComparisonDiff({ comparison }: ComparisonDiffProps) {
       </div>
 
       {/* Overall Risk Shift Summary */}
-      <div className="bg-slate-950/80 p-4 sm:p-5 rounded-xl border border-indigo-900/40">
+      <div className="bg-slate-950/80 p-4 sm:p-5 rounded-xl border border-indigo-900/40 break-words">
         <h3 className="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
           <ShieldAlert className="h-4 w-4 text-indigo-400" aria-hidden="true" />
           <span>Overall Risk Shift Summary</span>
         </h3>
-        <p className="text-sm text-slate-200 leading-relaxed">{riskSummary}</p>
+        <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">{riskSummary}</p>
       </div>
 
       {/* Side-by-Side Differences Grid */}
@@ -52,14 +52,14 @@ export default function ComparisonDiff({ comparison }: ComparisonDiffProps) {
 
           if (diff.changeSeverity === 'FAVORABLE') {
             badge = (
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
                 <span>FAVORABLE SHIFT</span>
               </span>
             );
           } else if (diff.changeSeverity === 'UNFAVORABLE') {
             badge = (
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-950 text-rose-300 border border-rose-800 flex items-center gap-1">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-300 border border-rose-500/30 flex items-center gap-1">
                 <TrendingDown className="h-3.5 w-3.5 text-rose-400" aria-hidden="true" />
                 <span>UNFAVORABLE SHIFT</span>
               </span>
@@ -69,7 +69,7 @@ export default function ComparisonDiff({ comparison }: ComparisonDiffProps) {
           return (
             <div
               key={idx}
-              className="bg-slate-950/70 border border-slate-800 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition shadow-sm"
+              className="bg-slate-950/70 border border-slate-800 rounded-xl p-5 space-y-4 hover:border-slate-700 transition shadow-sm break-words w-full overflow-hidden"
             >
               {/* Diff Header */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
@@ -82,28 +82,28 @@ export default function ComparisonDiff({ comparison }: ComparisonDiffProps) {
               {/* Side-by-Side Dual Column */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Draft A */}
-                <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 break-words">
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">
                     Draft A (Original)
                   </span>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-mono">
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
                     {diff.docA}
                   </p>
                 </div>
 
                 {/* Draft B */}
-                <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 break-words">
                   <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider block mb-1">
                     Draft B (Revision)
                   </span>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-mono">
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
                     {diff.docB}
                   </p>
                 </div>
               </div>
 
               {/* Plain-English Practical Impact */}
-              <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-xs sm:text-sm">
+              <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-xs sm:text-sm break-words">
                 <span className="font-semibold text-slate-200">Practical Impact: </span>
                 <span className="text-slate-300">{diff.impact}</span>
               </div>
