@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { scrubPII, MAX_DOCUMENT_LENGTH } from '@/lib/piiScrubber';
+import { scrubPII } from '@/lib/piiScrubber';
 import { analyzeDocument } from '@/lib/gemini';
 import { checkRateLimit } from '@/lib/rateLimiter';
+import { validateInput, verifyOrigin, sanitizedError, classifyAndSanitizeError } from '@/lib/security';
+import { analysisCache, buildCacheKey } from '@/lib/cache';
 import type { AnalysisResult } from '@/lib/types';
 
 const MANDATORY_DISCLAIMER =
@@ -9,6 +11,14 @@ const MANDATORY_DISCLAIMER =
 
 export async function POST(req: NextRequest) {
   try {
+    // 0. CSRF / Origin verification
+    if (!verifyOrigin(req)) {
+      return NextResponse.json(
+        sanitizedError('CSRF_REJECTED', 'Request origin not authorized.'),
+        { status: 403 }
+      );
+    }
+
     // 1. IP Rate Limiting Guard
     const clientIp =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -18,7 +28,7 @@ export async function POST(req: NextRequest) {
     const rateLimit = checkRateLimit(clientIp);
     if (!rateLimit.success) {
       return NextResponse.json(
-        { error: 'Rate limit exceeded. Please wait before analyzing another document.' },
+        sanitizedError('RATE_LIMITED', 'Rate limit exceeded. Please wait before analyzing another document.'),
         { status: 429 }
       );
     }
@@ -29,35 +39,52 @@ export async function POST(req: NextRequest) {
       body = await req.json();
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JSON payload' },
+        sanitizedError('PARSE_ERROR', 'Invalid JSON payload.'),
         { status: 400 }
       );
     }
 
     const { documentText, persona } = body || {};
 
-    if (!documentText || typeof documentText !== 'string' || !documentText.trim()) {
+    // 3. Strict input validation (type, control chars, length bounds)
+    const docValidation = validateInput(documentText, 'documentText');
+    if (!docValidation.valid) {
       return NextResponse.json(
-        { error: 'Missing or empty documentText parameter' },
+        sanitizedError('INVALID_INPUT', docValidation.error!),
         { status: 400 }
       );
     }
 
-    // 3. Payload Length Limit Guard
-    if (documentText.length > MAX_DOCUMENT_LENGTH) {
-      return NextResponse.json(
-        { error: `Document exceeds maximum length of ${MAX_DOCUMENT_LENGTH.toLocaleString()} characters.` },
-        { status: 400 }
-      );
+    // Validate persona if provided (allow short values like "Tenant")
+    if (persona !== undefined && persona !== null) {
+      const personaValidation = validateInput(persona, 'persona', { minLength: 2, maxLength: 200 });
+      if (!personaValidation.valid) {
+        return NextResponse.json(
+          sanitizedError('INVALID_INPUT', personaValidation.error!),
+          { status: 400 }
+        );
+      }
     }
 
-    // 4. Scrub PII
-    const { sanitizedText, redactionCount } = scrubPII(documentText);
+    const sanitizedDocText = docValidation.sanitized!;
 
-    // 5. Call Gemini
+    // 4. Check LRU cache (keyed by SHA-256 of documentText + persona)
+    const cacheKey = await buildCacheKey(sanitizedDocText, persona);
+    const cached = analysisCache.get(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        status: 200,
+        headers: { 'X-Cache': 'HIT' },
+      });
+    }
+
+    // 5. Scrub PII
+    const { sanitizedText, redactionCount } = scrubPII(sanitizedDocText);
+
+    // 6. Call Gemini
     const analysis = await analyzeDocument(sanitizedText, persona);
 
-    // 6. Inject PII count and mandatory legal disclaimer
+    // 7. Inject PII count and mandatory legal disclaimer
     const fullResult: AnalysisResult = {
       ...analysis,
       redactedPiiCount: redactionCount,
@@ -65,26 +92,17 @@ export async function POST(req: NextRequest) {
       dataSource: analysis.dataSource || 'live',
     };
 
-    return NextResponse.json(fullResult, { status: 200 });
-  } catch (error: any) {
+    // 8. Store in cache for future hits
+    analysisCache.set(cacheKey, fullResult);
+
+    return NextResponse.json(fullResult, {
+      status: 200,
+      headers: { 'X-Cache': 'MISS' },
+    });
+  } catch (error: unknown) {
+    // NEVER expose raw error messages, stack traces, or upstream model URLs
     console.error('API /api/analyze error:', error);
-
-    const errorMessage = error?.message || 'An unexpected error occurred';
-
-    if (
-      errorMessage.includes('429') ||
-      errorMessage.includes('RESOURCE_EXHAUSTED') ||
-      error?.status === 429
-    ) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please wait before analyzing another document.' },
-        { status: 429 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: `Failed to analyze document: ${errorMessage}` },
-      { status: 500 }
-    );
+    const { body, status } = classifyAndSanitizeError(error);
+    return NextResponse.json(body, { status });
   }
 }

@@ -12,7 +12,7 @@ interface RequestRecord {
 const rateLimitMap = new Map<string, RequestRecord>();
 
 // Cleanup stale IP entries every 5 minutes to prevent memory leaks
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   rateLimitMap.forEach((record, ip) => {
     record.timestamps = record.timestamps.filter((ts: number) => now - ts < 60000);
@@ -21,6 +21,11 @@ setInterval(() => {
     }
   });
 }, 5 * 60 * 1000);
+
+// Allow Node process to exit even if this timer is pending
+if (cleanupTimer && typeof cleanupTimer === 'object' && 'unref' in cleanupTimer) {
+  cleanupTimer.unref();
+}
 
 /**
  * Sliding-window rate limiter per IP address.
